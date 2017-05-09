@@ -46,7 +46,7 @@ if (CMAKE_UNAME)
 endif (CMAKE_UNAME)
 
 # Use clang. Use xcrun to determine the location
-EXEC_PROGRAM(xcrun -find clang++ OUTPUT_VARIABLE APPLE_CLANG)
+EXEC_PROGRAM(xcrun -find clang OUTPUT_VARIABLE APPLE_CLANG)
 EXEC_PROGRAM(xcrun -find clang++ OUTPUT_VARIABLE APPLE_CLANGPP)
 set(CMAKE_C_COMPILER ${APPLE_CLANG})
 set(CMAKE_CXX_COMPILER ${APPLE_CLANGPP})
