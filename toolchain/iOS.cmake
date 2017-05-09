@@ -45,10 +45,12 @@ if (CMAKE_UNAME)
 	string (REGEX REPLACE "^([0-9]+)\\.([0-9]+).*$" "\\1" DARWIN_MAJOR_VERSION "${CMAKE_HOST_SYSTEM_VERSION}")
 endif (CMAKE_UNAME)
 
-# Force the compilers to gcc for iOS
-include (CMakeForceCompiler)
-CMAKE_FORCE_C_COMPILER (/usr/bin/gcc Apple)
-CMAKE_FORCE_CXX_COMPILER (/usr/bin/g++ Apple)
+# Use clang. Use xcrun to determine the location
+EXEC_PROGRAM(xcrun -find clang++ OUTPUT_VARIABLE APPLE_CLANG)
+EXEC_PROGRAM(xcrun -find clang++ OUTPUT_VARIABLE APPLE_CLANGPP)
+set(CMAKE_C_COMPILER ${APPLE_CLANG})
+set(CMAKE_CXX_COMPILER ${APPLE_CLANGPP})
+
 set(CMAKE_AR ar CACHE FILEPATH "" FORCE)
 
 # Skip the platform compiler checks for cross compiling
@@ -81,6 +83,8 @@ set (CMAKE_SHARED_MODULE_CREATE_C_FLAGS "-bundle -headerpad_max_install_names")
 set (CMAKE_SHARED_MODULE_LOADER_C_FLAG "-Wl,-bundle_loader,")
 set (CMAKE_SHARED_MODULE_LOADER_CXX_FLAG "-Wl,-bundle_loader,")
 set (CMAKE_FIND_LIBRARY_SUFFIXES ".dylib" ".so" ".a")
+set(CMAKE_MACOSX_BUNDLE ON)
+set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED OFF)
 
 # hack: if a new cmake (which uses CMAKE_INSTALL_NAME_TOOL) runs on an old build tree
 # (where install_name_tool was hardcoded) and where CMAKE_INSTALL_NAME_TOOL isn't in the cache
@@ -109,13 +113,11 @@ if (${IOS_PLATFORM} STREQUAL "OS")
 	# This causes the installers to properly locate the output libraries
 	set (CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphoneos")
 elseif (${IOS_PLATFORM} STREQUAL "SIMULATOR")
-    set (SIMULATOR true)
 	set (IOS_PLATFORM_LOCATION "iPhoneSimulator.platform")
 
 	# This causes the installers to properly locate the output libraries
 	set (CMAKE_XCODE_EFFECTIVE_PLATFORMS "-iphonesimulator")
 elseif (${IOS_PLATFORM} STREQUAL "SIMULATOR64")
-    set (SIMULATOR true)
 	set (IOS_PLATFORM_LOCATION "iPhoneSimulator.platform")
 
 	# This causes the installers to properly locate the output libraries
