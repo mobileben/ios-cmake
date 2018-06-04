@@ -38,6 +38,13 @@ set (IOS True)
 # Required as of cmake 2.8.10
 set (CMAKE_OSX_DEPLOYMENT_TARGET "" CACHE STRING "Force unset of the deployment target for iOS" FORCE)
 
+# Allow external setting of CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET. This is clumsy
+# but it provides flexibility of not having to hardcode the deployment version in the file or have
+# numerous copies of the file
+if ($ENV{CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET}) 
+	set(CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET $ENV{CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET})
+endif ($ENV{CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET})
+
 # Determine the cmake host system version so we know where to find the iOS SDKs
 find_program (CMAKE_UNAME uname /bin /usr/bin /usr/local/bin)
 if (CMAKE_UNAME)
@@ -48,10 +55,15 @@ endif (CMAKE_UNAME)
 # Use clang. Use xcrun to determine the location
 EXEC_PROGRAM(xcrun ARGS -find clang OUTPUT_VARIABLE APPLE_CLANG)
 EXEC_PROGRAM(xcrun ARGS -find clang++ OUTPUT_VARIABLE APPLE_CLANGPP)
-set(CMAKE_C_COMPILER ${APPLE_CLANG})
-set(CMAKE_CXX_COMPILER ${APPLE_CLANGPP})
+set (CMAKE_C_COMPILER ${APPLE_CLANG})
+set (CMAKE_CXX_COMPILER ${APPLE_CLANGPP})
 
-set(CMAKE_AR ar CACHE FILEPATH "" FORCE)
+set (CMAKE_AR ar CACHE FILEPATH "" FORCE)
+
+set (CMAKE_THREAD_LIBS_INIT "-lpthread")
+set (CMAKE_HAVE_THREADS_LIBRARY 1)
+set (CMAKE_USE_WIN32_THREADS_INIT 0)
+set (CMAKE_USE_PTHREADS_INIT 1)
 
 # Skip the platform compiler checks for cross compiling
 set (CMAKE_CXX_COMPILER_WORKS TRUE)
@@ -72,7 +84,9 @@ set (CMAKE_CXX_OSX_CURRENT_VERSION_FLAG "${CMAKE_C_OSX_CURRENT_VERSION_FLAG}")
 
 # Hidden visibilty is required for cxx on iOS 
 set (CMAKE_C_FLAGS_INIT "")
-set (CMAKE_CXX_FLAGS_INIT "-fvisibility=hidden -fvisibility-inlines-hidden")
+set (CMAKE_CXX_FLAGS_INIT "-fvisibility=hidden")
+
+set (CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN "" CACHE STRING "Force unset of CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY_INLINES_HIDDEN" FORCE)
 
 set (CMAKE_C_LINK_FLAGS "-Wl,-search_paths_first ${CMAKE_C_LINK_FLAGS}")
 set (CMAKE_CXX_LINK_FLAGS "-Wl,-search_paths_first ${CMAKE_CXX_LINK_FLAGS}")
@@ -83,8 +97,9 @@ set (CMAKE_SHARED_MODULE_CREATE_C_FLAGS "-bundle -headerpad_max_install_names")
 set (CMAKE_SHARED_MODULE_LOADER_C_FLAG "-Wl,-bundle_loader,")
 set (CMAKE_SHARED_MODULE_LOADER_CXX_FLAG "-Wl,-bundle_loader,")
 set (CMAKE_FIND_LIBRARY_SUFFIXES ".dylib" ".so" ".a")
-set(CMAKE_MACOSX_BUNDLE ON)
-set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED OFF)
+set (CMAKE_MACOSX_BUNDLE ON)
+set (CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED OFF)
+
 
 # hack: if a new cmake (which uses CMAKE_INSTALL_NAME_TOOL) runs on an old build tree
 # (where install_name_tool was hardcoded) and where CMAKE_INSTALL_NAME_TOOL isn't in the cache
